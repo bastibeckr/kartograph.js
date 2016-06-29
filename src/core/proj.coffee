@@ -17,7 +17,7 @@
 ###
 
 
-__proj = kartograph.proj = {}
+proj = kartograph.proj = root.kartograph.proj = {}
 
 Function::bind = (scope) ->
     _function = @
@@ -80,7 +80,7 @@ class Proj
     world_bbox: ->
         p = @project.bind @
         sea = @sea()
-        bbox = new kartograph.BBox()
+        bbox = new BBox()
         for s in sea
             bbox.update(s[0],s[1])
         bbox
@@ -100,11 +100,14 @@ Proj.fromXML = (xml) ->
         attr = xml.attributes[i]
         if attr.name != "id"
             opts[attr.name] = attr.value
-    proj = new kartograph.proj[id](opts)
-    proj.name = id
-    proj
+    if not proj[id]?
+        throw 'unknown projection '+id
+    prj = new proj[id](opts)
+    prj.name = id
+    prj
 
 kartograph.Proj = Proj
+
 
 
 # -------------------------------
@@ -161,8 +164,7 @@ class Azimuthal extends Proj
 
     world_bbox: ->
         r = @r
-        new kartograph.BBox(0,0,r*2, r*2)
-
+        new BBox(0,0,r*2, r*2)
 
 
 class Satellite extends Azimuthal
@@ -223,8 +225,8 @@ class Satellite extends Azimuthal
         sin_tilt = sin(@tilt)
 
         H = ra * (@dist - 1)
-        A = ((yo * cos_up + xo * sin_up) * sin(@tilt/H)) + cos_tilt
-        xt = (xo * cos_up - yo * sin_up) * cos(@tilt/A)
+        A = ((yo * cos_up + xo * sin_up) * sin(@tilt)/H) + cos_tilt
+        xt = (xo * cos_up - yo * sin_up) * cos(@tilt) /A
         yt = (yo * cos_up + xo * sin_up) / A
 
         x = r + xt
@@ -248,4 +250,5 @@ class Satellite extends Azimuthal
             out.push([r + math.cos(@rad(phi)) * r, r + math.sin(@rad(phi)) * r])
         out
 
-__proj['satellite'] = Satellite
+proj['satellite'] = Satellite
+

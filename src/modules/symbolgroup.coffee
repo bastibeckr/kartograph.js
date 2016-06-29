@@ -85,7 +85,7 @@ class SymbolGroup
         SymbolType = me.type
         ll = me._evaluate me.location,data,key
         if __type(ll) == 'array'
-            ll = new kartograph.LonLat ll[0],ll[1]
+            ll = new LonLat ll[0],ll[1]
 
         sprops =
             layers: me.layers
@@ -151,10 +151,6 @@ class SymbolGroup
             for node in s.nodes()
                 node.symbol = s
 
-        # tooltips
-        if __type(me.tooltip) == "function"
-            me._initTooltips()
-
         # events
         $.each ['click', 'mouseenter', 'mouseleave'], (i, evt) ->
             if __type(me[evt]) == "function"
@@ -166,12 +162,6 @@ class SymbolGroup
                                 tgt = $(tgt).parent().get(0)
                             e.stopPropagation()
                             me[evt] tgt.symbol.data, tgt.symbol, e
-        me
-
-    tooltips: (cb) ->
-        me = @
-        me.tooltips = cb
-        me._initTooltips()
         me
 
     remove: (filter) ->
@@ -341,40 +331,6 @@ class SymbolGroup
             symbols = out
         me.symbols = symbols
 
-    _initTooltips: () =>
-        me = @
-        tooltips = me.tooltip
-        for s in me.symbols
-            cfg =
-                position:
-                    target: 'mouse'
-                    viewport: $(window)
-                    adjust:
-                        x:7
-                        y:7
-                show:
-                    delay: 20
-                content: {}
-                events:
-                    show: (evt, api) ->
-                        # make sure that two tooltips are never shown
-                        # together at the same time
-                        $('.qtip').filter () ->
-                            this != api.elements.tooltip.get(0)
-                        .hide()
-
-            tt = tooltips s.data, s.key
-            if __type(tt) == "string"
-                cfg.content.text = tt
-            else if __type(tt) == "array"
-                cfg.content.title = tt[0]
-                cfg.content.text = tt[1]
-
-            for node in s.nodes()
-                $(node).qtip(cfg)
-        return
-
-
     onResize: () ->
         me = @
         me.layout()
@@ -400,7 +356,7 @@ class SymbolGroup
 SymbolGroup._layerid = 0
 kartograph.SymbolGroup = SymbolGroup
 
-kartograph.Kartograph::addSymbols = (opts) ->
+Kartograph::addSymbols = (opts) ->
     opts.map = @
     new SymbolGroup(opts)
 

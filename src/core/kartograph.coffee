@@ -42,7 +42,8 @@ class Kartograph
         vp = me.viewport
         cnt = me.container
         paper = Snap(vp.width, vp.height);
-        svg = $ paper.canvas
+        cnt.append paper.node
+        svg = $ paper.node
         svg.css
             position: 'absolute'
             top: '0px'
@@ -55,9 +56,8 @@ class Kartograph
                 height: vp.height+'px'
 
         svg.addClass id
-        about = $('desc', paper.canvas).text()
-        $('desc', paper.canvas).text(about.replace('with ', 'with kartograph '+kartograph.version+' and '))
-
+        about = $('desc', paper.node).text()
+        $('desc', paper.node).text(about.replace('with ', 'with kartograph '+kartograph.version+' and '))
         paper
 
     createHTMLLayer: (id) ->
@@ -77,7 +77,7 @@ class Kartograph
         cnt.append div
         div
 
-    loadMap: (mapurl, callback, opts) ->
+    load: (mapurl, callback, opts) ->
         # load svg map
         me = @
         # line 95
@@ -96,12 +96,15 @@ class Kartograph
             # load map from url
             $.ajax
                 url: mapurl
-                dataType: "text" # if $.browser.msie then "text" else "xml"
+                dataType: "text"
                 success: me._mapLoaded
                 context: me
                 error: (a,b,c) ->
                     warn a,b,c
         return def.promise()
+
+    loadMap: () ->
+        @load.apply @, arguments
 
 
     setMap: (svg, opts) ->
@@ -140,13 +143,13 @@ class Kartograph
             me.viewport = new BBox 0, 0, w, h
 
         vp = me.viewport
-        me.viewAB = AB = kartograph.View.fromXML $view[0]
+        me.viewAB = AB = View.fromXML $view[0]
         padding = me.opts.padding ? 0
         halign = me.opts.halign ? 'center'
         valign = me.opts.valign ? 'center'
-        # me.viewBC = new kartograph.View AB.asBBox(),vp.width,vp.height, padding, halign, valign
+        # me.viewBC = new View AB.asBBox(),vp.width,vp.height, padding, halign, valign
         zoom = me.opts.zoom ? 1
-        me.viewBC = new kartograph.View me.viewAB.asBBox(), vp.width*zoom, vp.height*zoom, padding,halign,valign
+        me.viewBC = new View me.viewAB.asBBox(), vp.width*zoom, vp.height*zoom, padding,halign,valign
         me.proj = kartograph.Proj.fromXML $('proj', $view)[0]
         if me.mapLoadCallback?
             me.mapLoadCallback me
@@ -174,6 +177,10 @@ class Kartograph
         else
             opts = {}
 
+        layer_paper = me.paper
+        if opts.add_svg_layer
+            layer_paper = me.createSVGLayer()
+
         layer_id ?= src_id
         svgLayer = $('#'+src_id, me.svgSrc)
 
@@ -181,7 +188,7 @@ class Kartograph
             # warn 'didn\'t find any paths for layer "'+src_id+'"'
             return
 
-        layer = new MapLayer(layer_id, path_id, me, opts.filter)
+        layer = new MapLayer(layer_id, path_id, me, opts.filter, layer_paper)
 
         $paths = $('*', svgLayer[0])
 
@@ -212,8 +219,6 @@ class Kartograph
             for evt in checkEvents
                 if __type(opts[evt]) == 'function'
                     layer.on evt, opts[evt]
-            if opts.tooltips?
-                layer.tooltips opts.tooltips
             if opts.done?
                 opts.done()
 
@@ -299,15 +304,18 @@ class Kartograph
         cnt = me.container
         w ?= cnt.width()
         h ?= cnt.height()
-        me.viewport = vp = new kartograph.BBox 0,0,w,h
-        if me.paper?
-            me.paper.setSize vp.width, vp.height
-        vp = me.viewport
+        me.viewport = vp = new BBox 0,0,w,h
+        # if me.paper?
+        #     me.paper.setSize vp.width, vp.height
+        # update size for other svg layers as well
+        # for id,layer of me.layers
+        #     if layer.paper? and layer.paper != me.paper
+        #         layer.paper.setSize vp.width, vp.height
         padding = me.opts.padding ? 0
         halign = me.opts.halign ? 'center'
         valign = me.opts.valign ? 'center'
         zoom = me.opts.zoom
-        me.viewBC = new kartograph.View me.viewAB.asBBox(),vp.width*zoom,vp.height*zoom, padding,halign,valign
+        me.viewBC = new View me.viewAB.asBBox(),vp.width*zoom,vp.height*zoom, padding,halign,valign
         for id,layer of me.layers
             layer.setView(me.viewBC)
 
@@ -319,8 +327,8 @@ class Kartograph
 
     lonlat2xy: (lonlat) ->
         me = @
-        lonlat = new kartograph.LonLat(lonlat[0], lonlat[1]) if lonlat.length == 2
-        lonlat = new kartograph.LonLat(lonlat[0], lonlat[1], lonlat[2]) if lonlat.length == 3
+        lonlat = new LonLat(lonlat[0], lonlat[1]) if lonlat.length == 2
+        lonlat = new LonLat(lonlat[0], lonlat[1], lonlat[2]) if lonlat.length == 3
         a = me.proj.project(lonlat.lon, lonlat.lat, lonlat.alt)
         me.viewBC.project(me.viewAB.project(a))
 
@@ -362,19 +370,9 @@ class Kartograph
         loads a stylesheet
         ###
         me = @
-        if $.browser.msie
-            $.ajax
-                url: url
-                dataType: 'text'
-                success: (resp) ->
-                    me.styles = kartograph.parsecss resp
-                    callback()
-                error: (a,b,c) ->
-                    warn 'error while loading '+url, a,b,c
 
-        else
-            $('body').append '<link rel="stylesheet" href="'+url+'" />'
-            callback()
+        $('body').append '<link rel="stylesheet" href="'+url+'" />'
+        callback()
 
 
     applyCSS: (el, className) ->
@@ -417,12 +415,15 @@ class Kartograph
             layer.style prop, value, duration, delay
 
 
-kartograph.Kartograph = Kartograph
+K = kartograph
+
+root.kartograph = (container, width, height) ->
+    new Kartograph container, width, height
 
 kartograph.map = (container, width, height) ->
-    ### short-hand constructor ###
     new Kartograph container, width, height
 
 
 kartograph.__mapCache = {} # will store svg files
 
+$.extend root.kartograph, K

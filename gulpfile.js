@@ -19,11 +19,11 @@ gulp.task('coffee', ['clean'], function() {
     gutil.log(JSON.stringify(manifest, null, 2));
 
     gulp.src(kartographDeps.globs)
+        .pipe(concat('kartograph.coffee'))
         .pipe(coffee({
-            bare: true
+
         }).on('error', gutil.log))
-        .pipe(concat('kartograph.js'))
-        .pipe(gulp.dest(manifest.paths.dist));
+        .pipe(gulp.dest(manifest.paths.dist+'/kartograph.js'));
 
 });
 

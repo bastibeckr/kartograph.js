@@ -16,7 +16,7 @@
     License along with this library. If not, see <http://www.gnu.org/licenses/>.
 ###
 
-kartograph.geom ?= {}
+geom = kartograph.geom ?= {}
 
 class Path
 	###
@@ -25,7 +25,11 @@ class Path
 	constructor: (type, contours, closed=true) ->
 		self = @
 		self.type = type
-		self.contours = contours
+		self.contours = []
+		for cnt in contours
+			if not __is_clockwise cnt
+				cnt.reverse()
+			self.contours.push cnt
 		self.closed = closed
 
 	clipToBBox: (bbox) ->
@@ -60,11 +64,7 @@ class Path
 		me.areas = []
 		me._area = 0
 		for cnt in me.contours
-			area = 0
-			for i in [0..cnt.length-2]
-				area += cnt[i][0]*cnt[i+1][1] - cnt[i+1][0]*cnt[i][1]
-			area *= .5
-			area = area
+			area = __area cnt
 			me.areas.push area
 			me._area += area
 		me._area
@@ -82,6 +82,11 @@ class Path
 			cnt = []
 			l = cnt_orig.length
 
+			a = me.areas[i]
+			k = a/area
+			if k == 0
+				continue
+
 			for j in [0..l-1]
 				p0 = cnt_orig[j]
 				p1 = cnt_orig[(j+1)%l]
@@ -98,7 +103,6 @@ class Path
 						cnt.push sp
 					# insert new points in between
 
-			a = me.areas[i]
 			x = y = x_ = y_ = 0
 			l = cnt.length
 			# at first compute total edge length
@@ -119,7 +123,6 @@ class Path
 				x += w * p0[0]
 				y += w * p0[1]
 
-			k = a/area
 			cx += x * k
 			cy += y * k
 		me._centroid = [cx,cy]
@@ -197,7 +200,7 @@ Path.fromSVG = (path) ->
 			contours.push contour
 			contour = []
 
-		res = new kartograph.geom.Path(type, contours, closed)
+		res = new geom.Path(type, contours, closed)
 
 	else if type == "circle"
 
@@ -205,7 +208,7 @@ Path.fromSVG = (path) ->
 		cy = path.getAttribute "cy"
 		r = path.getAttribute "r"
 
-		res = new kartograph.geom.Circle(cx,cy,r)
+		res = new geom.Circle(cx,cy,r)
 
 	res
 
@@ -220,7 +223,7 @@ class Line
 	clipToBBox: (bbox) ->
 		self = @
 		# line clipping here
-		clip = new kartograph.geom.clipping.CohenSutherland().clip
+		clip = new geom.clipping.CohenSutherland().clip
 		pts = []
 		lines = []
 		last_in = false
@@ -272,5 +275,21 @@ __point_in_polygon = (polygon, p) ->
 		while dtheta < -pi
 			dtheta += twopi
 		angle += dtheta
-	return Math.abs(angle) >= pi
+	Math.abs(angle) >= pi
+
+
+__is_clockwise = (contour) ->
+	__area(contour) > 0
+
+
+__area = (contour) ->
+	s = 0
+	n = contour.length
+	for i in [0...n]
+		x1 = contour[i][0]
+		y1 = contour[i][1]
+		x2 = contour[(i+1)%n][0]
+		y2 = contour[(i+1)%n][1]
+		s += x1 * y2 - x2 * y1
+	s *= 0.5
 
