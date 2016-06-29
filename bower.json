@@ -1,0 +1,22 @@
+{
+  "name": "kartograph-js",
+  "description": "JavaScript library for SVG mapping",
+  "main": "kartograph.js",
+  "authors": [
+    "Gregor Aisch"
+  ],
+  "license": "MIT",
+  "keywords": [
+    "svg",
+    "map",
+    "snap"
+  ],
+  "homepage": "https://github.com/bastibeckr/kartograph.js",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}

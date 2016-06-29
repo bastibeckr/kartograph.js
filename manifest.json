@@ -1,0 +1,16 @@
+{
+    "dependencies": {
+        "kartograph.js": {
+            "files": [
+                "core.coffee",
+                "core/*.coffee",
+                "modules/*.coffee",
+                "modules/symbols/*.coffee"
+            ]
+        }
+    },
+    "paths": {
+        "source": "src/",
+        "dist": "public/"
+    }
+}
