@@ -1,6 +1,10 @@
+## Kartograph.js port for Snap.svg
+
+I also removed some modules and projections to get kartograph.js as slim as possible.
+
 # Kartograph.js
 
-This project is not maintained anymore. The original author decided to move on with his life. 
+This project is not maintained anymore. The original author decided to move on with his life.
 
 Here are a few reasons why I stopped working on kartograph.js:
 
@@ -16,7 +20,7 @@ Of course, if you still want to take over from here, kartograph.js is all yours.
 
 -------------
 
-Kartograph.js is a JavaScript library that renders [SVG maps](https://github.com/kartograph/kartograph.py/) in web browsers. It is built on top of [jQuery](http://jquery.com) and [RaphaelJS](http://raphaeljs.com). Please have a look at the [API docs](https://github.com/kartograph/kartograph.js/wiki/API) for more details. 
+Kartograph.js is a JavaScript library that renders [SVG maps](https://github.com/kartograph/kartograph.py/) in web browsers. It is built on top of [jQuery](http://jquery.com) and [RaphaelJS](http://raphaeljs.com). Please have a look at the [API docs](https://github.com/kartograph/kartograph.js/wiki/API) for more details.
 
 Initializing a new map
 
