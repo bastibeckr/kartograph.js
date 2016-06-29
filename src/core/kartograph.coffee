@@ -41,7 +41,7 @@ class Kartograph
         lid = me._layerCnt++
         vp = me.viewport
         cnt = me.container
-        paper = Raphael cnt[0],vp.width,vp.height
+        paper = Snap(vp.width, vp.height);
         svg = $ paper.canvas
         svg.css
             position: 'absolute'
@@ -403,7 +403,7 @@ class Kartograph
                 p = p[0]
                 if me._pathTypes.indexOf(p) >= 0 and p != el.type
                     continue
-                # if we made it until here, the styles can be applied 
+                # if we made it until here, the styles can be applied
                 props = me.styles[sel]
                 for k in me._regardStyles
                     if props[k]?

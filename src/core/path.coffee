@@ -173,7 +173,7 @@ Path.fromSVG = (path) ->
 	res = null
 	if type == "path"
 		path_str = path.getAttribute('d').trim()
-		path_data = Raphael.parsePathString path_str
+		path_data = Snap.parsePathString path_str
 		closed = path_data[path_data.length-1] == "Z"
 		#closed = path_str[path_str.length-1] == "Z"
 		sep = if closed then "Z M" else "M"

@@ -1,5 +1,5 @@
 ###
-    kartograph - a svg mapping library 
+    kartograph - a svg mapping library
     Copyright (C) 2011,2012  Gregor Aisch
 
     This library is free software; you can redistribute it and/or
@@ -112,7 +112,7 @@ class MapLayer
             if dur > 0
                 at = {}
                 at[prop] = val
-                anim = Raphael.animation(at, dur * 1000)
+                anim = Snap.animation(at, dur * 1000)
                 path.svgPath.animate(anim.delay(dly * 1000))
             else
                 path.svgPath.attr(prop, val)

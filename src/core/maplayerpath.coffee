@@ -1,6 +1,6 @@
 
 ###
-    kartograph - a svg mapping library 
+    kartograph - a svg mapping library
     Copyright (C) 2011,2012  Gregor Aisch
 
     This library is free software; you can redistribute it and/or
@@ -27,8 +27,7 @@ class MapLayerPath
         me.vpath = view.projectPath(path)
         me.svgPath = me.vpath.toSVG(paper)
         if not map.styles?
-            if Raphael.svg
-                me.svgPath.node.setAttribute('class', layer_id)
+            me.svgPath.node.setAttribute('class', layer_id)
         else
             map.applyCSS me.svgPath,layer_id
 
